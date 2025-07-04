@@ -32,7 +32,7 @@
       register: reboot_required
 
     - name: Log reboot requirement
-      ansible.builtin.shell: echo "Reboot required: {{ reboot_required.stat.exists }}" >> {{ log_file }}
+      ansible.builtin.shell: echo "Reboot required {{ reboot_required.stat.exists }}" >> {{ log_file }}
 
     - name: Reboot if needed
       ansible.builtin.reboot:
@@ -42,4 +42,4 @@
       when: reboot_required.stat.exists
 
     - name: Log end of playbook
-      ansible.builtin.shell: echo "=== Finished APT update/upgrade: {{ ansible_date_time.iso8601 }}" >> {{ log_file }}
+      ansible.builtin.shell: echo "=== Finished APT update/upgrade {{ ansible_date_time.iso8601 }}" >> {{ log_file }}
