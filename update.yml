@@ -9,7 +9,7 @@
   tasks:
 
     - name: Log start of update and upgrade
-      ansible.builtin.shell: echo "=== Starting APT update/upgrade: {{ ansible_date_time.iso8601 }}" >> {{ log_file }}
+      ansible.builtin.shell: echo "=== Starting APT update/upgrade"
 
     - name: Update APT cache
       ansible.builtin.apt:
