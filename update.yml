@@ -1,0 +1,45 @@
+---
+- name: Update, upgrade, log actions, and reboot if necessary
+  hosts: dev #all
+  become: yes
+
+  vars:
+    log_file: /var/log/ansible_apt_upgrade.log
+
+  tasks:
+
+    - name: Log start of update and upgrade
+      ansible.builtin.shell: echo "=== Starting APT update/upgrade: {{ ansible_date_time.iso8601 }}" >> {{ log_file }}
+
+    - name: Update APT cache
+      ansible.builtin.apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Upgrade all packages
+      ansible.builtin.apt:
+        upgrade: dist
+      register: upgrade_result
+
+    - name: Log upgrade result
+      ansible.builtin.shell: |
+        echo "Packages upgraded: {{ upgrade_result.stdout_lines | default([]) | join(', ') }}" >> {{ log_file }}
+      when: upgrade_result is defined
+
+    - name: Check if a reboot is required
+      ansible.builtin.stat:
+        path: /var/run/reboot-required
+      register: reboot_required
+
+    - name: Log reboot requirement
+      ansible.builtin.shell: echo "Reboot required: {{ reboot_required.stat.exists }}" >> {{ log_file }}
+
+    - name: Reboot if needed
+      ansible.builtin.reboot:
+        msg: "Rebooting after package upgrade"
+        pre_reboot_delay: 10
+        reboot_timeout: 600
+      when: reboot_required.stat.exists
+
+    - name: Log end of playbook
+      ansible.builtin.shell: echo "=== Finished APT update/upgrade: {{ ansible_date_time.iso8601 }}" >> {{ log_file }}
